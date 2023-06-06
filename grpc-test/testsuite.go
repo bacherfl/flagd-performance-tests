@@ -4,6 +4,9 @@ import (
 	schemav1 "buf.build/gen/go/open-feature/flagd/protocolbuffers/go/schema/v1"
 	"context"
 	"fmt"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/structpb"
 	"k8s.io/apimachinery/pkg/util/rand"
@@ -11,11 +14,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-	"time"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"google.golang.org/grpc"
 
 	pb "buf.build/gen/go/open-feature/flagd/grpc/go/schema/v1/schemav1grpc"
 )
@@ -59,7 +57,7 @@ func doRequests(wg *sync.WaitGroup) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(resp).NotTo(BeNil())
-		<-time.After(10 * time.Millisecond)
+		//<-time.After(10 * time.Millisecond)
 	}
 	conn.Close()
 	wg.Done()
