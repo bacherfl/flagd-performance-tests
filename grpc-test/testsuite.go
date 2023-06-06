@@ -35,18 +35,20 @@ var _ = Describe("YourGRPCService", func() {
 
 	It("should perform a gRPC request successfully", func() {
 
-		randNumber := rand.Intn(5000)
-
-		resp, err := client.ResolveString(context.Background(), &schemav1.ResolveStringRequest{
-			FlagKey: fmt.Sprintf("color-%d", randNumber),
-			Context: &structpb.Struct{
-				Fields: map[string]*structpb.Value{
-					"version": structpb.NewStringValue("1.0.0"),
+		for i := 0; i < 1000; i++ {
+			randNumber := rand.Intn(5000)
+			resp, err := client.ResolveString(context.Background(), &schemav1.ResolveStringRequest{
+				FlagKey: fmt.Sprintf("color-%d", randNumber),
+				Context: &structpb.Struct{
+					Fields: map[string]*structpb.Value{
+						"version": structpb.NewStringValue("1.0.0"),
+					},
 				},
-			},
-		})
-		Expect(err).NotTo(HaveOccurred())
-		Expect(resp).NotTo(BeNil())
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp).NotTo(BeNil())
+		}
+
 	})
 })
 
