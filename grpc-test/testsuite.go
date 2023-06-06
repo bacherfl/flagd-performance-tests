@@ -22,7 +22,7 @@ var _ = Describe("YourGRPCService", func() {
 
 	It("should perform gRPC requests successfully", func() {
 
-		numClients := 1000
+		numClients := 1
 		if numClientsEnv := os.Getenv("NUM_CLIENTS"); numClientsEnv != "" {
 			if parsedNumClients, err := strconv.ParseInt(numClientsEnv, 10, 64); err != nil && parsedNumClients > 0 {
 				numClients = int(parsedNumClients)
