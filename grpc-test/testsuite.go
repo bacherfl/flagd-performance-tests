@@ -4,6 +4,7 @@ import (
 	schemav1 "buf.build/gen/go/open-feature/flagd/protocolbuffers/go/schema/v1"
 	"context"
 	"fmt"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/structpb"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"testing"
@@ -23,7 +24,7 @@ var _ = Describe("YourGRPCService", func() {
 
 	BeforeEach(func() {
 		var err error
-		conn, err = grpc.Dial("flagd.flagd-performance-test:80", grpc.WithInsecure())
+		conn, err = grpc.Dial("flagd.flagd-performance-test:80", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		Expect(err).NotTo(HaveOccurred())
 		client = pb.NewServiceClient(conn)
 	})
