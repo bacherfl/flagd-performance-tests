@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 
 	pb "buf.build/gen/go/open-feature/flagd/grpc/go/schema/v1/schemav1grpc"
 )
@@ -35,7 +36,7 @@ var _ = Describe("YourGRPCService", func() {
 		for i := 0; i < numClients; i++ {
 			go func() {
 				defer wg.Done()
-				doRequests()
+				doRequests(5 * time.Minute)
 			}()
 		}
 
@@ -44,11 +45,17 @@ var _ = Describe("YourGRPCService", func() {
 	})
 })
 
-func doRequests() {
+func doRequests(duration time.Duration) {
 	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	Expect(err).NotTo(HaveOccurred())
 	client := pb.NewServiceClient(conn)
-	for i := 0; i < 10000; i++ {
+
+	end := time.Now().Add(duration)
+
+	for {
+		if time.Now().After(end) {
+			break
+		}
 		randNumber := rand.Intn(5000)
 		resp, err := client.ResolveString(context.Background(), &schemav1.ResolveStringRequest{
 			FlagKey: fmt.Sprintf("color-%d", randNumber),
@@ -60,7 +67,6 @@ func doRequests() {
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(resp).NotTo(BeNil())
-		//<-time.After(10 * time.Millisecond)
 	}
 	conn.Close()
 }
