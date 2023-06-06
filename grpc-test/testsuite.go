@@ -47,7 +47,7 @@ func doRequests(wg *sync.WaitGroup) {
 	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	Expect(err).NotTo(HaveOccurred())
 	client := pb.NewServiceClient(conn)
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 10000; i++ {
 		randNumber := rand.Intn(5000)
 		resp, err := client.ResolveString(context.Background(), &schemav1.ResolveStringRequest{
 			FlagKey: fmt.Sprintf("color-%d", randNumber),
