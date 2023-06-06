@@ -33,7 +33,10 @@ var _ = Describe("YourGRPCService", func() {
 		wg.Add(numClients)
 
 		for i := 0; i < numClients; i++ {
-			go doRequests(wg)
+			go func() {
+				defer wg.Done()
+				doRequests()
+			}()
 		}
 
 		wg.Wait()
@@ -41,7 +44,7 @@ var _ = Describe("YourGRPCService", func() {
 	})
 })
 
-func doRequests(wg *sync.WaitGroup) {
+func doRequests() {
 	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	Expect(err).NotTo(HaveOccurred())
 	client := pb.NewServiceClient(conn)
@@ -60,7 +63,6 @@ func doRequests(wg *sync.WaitGroup) {
 		//<-time.After(10 * time.Millisecond)
 	}
 	conn.Close()
-	wg.Done()
 }
 
 func TestGRPC(t *testing.T) {
