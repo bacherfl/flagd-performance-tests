@@ -33,13 +33,13 @@ var _ = Describe("YourGRPCService", func() {
 		wg.Add(numClients)
 
 		for i := 0; i < numClients; i++ {
-			//go func() {
-			//defer wg.Done()
-			doRequests()
-			//}()
+			go func() {
+				defer wg.Done()
+				doRequests()
+			}()
 		}
 
-		//wg.Wait()
+		wg.Wait()
 
 	})
 })
