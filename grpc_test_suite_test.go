@@ -1,4 +1,4 @@
-package grpc_test_test
+package main_test
 
 import (
 	"testing"
