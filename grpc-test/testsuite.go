@@ -24,7 +24,7 @@ var _ = Describe("YourGRPCService", func() {
 
 	BeforeEach(func() {
 		var err error
-		conn, err = grpc.Dial("flagd.flagd-performance-test:80", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err = grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		Expect(err).NotTo(HaveOccurred())
 		client = pb.NewServiceClient(conn)
 	})
