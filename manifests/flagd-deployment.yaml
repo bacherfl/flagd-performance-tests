@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: flagd
+  name: flagd
+  namespace: flagd-performance-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flagd
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: flagd
+    spec:
+      volumes:
+        - name: proxy-config
+          configMap:
+            name: proxy-config
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: kube-api-access-t7vn8
+          projected:
+            sources:
+              - serviceAccountToken:
+                  expirationSeconds: 3607
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
+            defaultMode: 420
+      containers:
+        - name: flagd-proxy
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: proxy-config
+              mountPath: /etc/nginx
+              readOnly: true
+        - name: flagd
+          image: bacherfl/flagd:latest
+          args:
+            - start
+            - '--uri'
+            - core.openfeature.dev/flagd-performance-test/benchmark-flag-source-config
+            - '-x'
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: FLAGD_METRICS_PORT
+              value: '8080'
+          resources:
+            limits:
+              cpu: 500m
+              memory: 64M
+            requests:
+              cpu: 200m
+              memory: 32M
+          volumeMounts:
+            - name: kube-api-access-t7vn8
+              readOnly: true
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          securityContext:
+            capabilities:
+              drop:
+                - all
+            privileged: false
+            runAsUser: 65532
+            runAsGroup: 65532
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-config
+  namespace: flagd-performance-test
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        location / {
+          proxy_pass http://127.0.0.1:8013;
+          grpc_pass grpc://localhost:8013;
+        }
+      }
+    }

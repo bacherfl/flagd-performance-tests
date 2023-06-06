@@ -1,0 +1,11 @@
+apiVersion: k6.io/v1alpha1
+kind: K6
+metadata:
+  name: flagd-stress-test
+  namespace: flagd-performance-test
+spec:
+  parallelism: 4
+  script:
+    configMap:
+      name: flagd-stress-test
+      file: test.js
