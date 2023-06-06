@@ -23,12 +23,7 @@ var _ = Describe("YourGRPCService", func() {
 
 	It("should perform gRPC requests successfully", func() {
 
-		numClients := 1
-		if numClientsEnv := os.Getenv("NUM_CLIENTS"); numClientsEnv != "" {
-			if parsedNumClients, err := strconv.ParseInt(numClientsEnv, 10, 64); err != nil && parsedNumClients > 0 {
-				numClients = int(parsedNumClients)
-			}
-		}
+		numClients := getNumClients()
 		wg := &sync.WaitGroup{}
 
 		wg.Add(numClients)
@@ -44,6 +39,17 @@ var _ = Describe("YourGRPCService", func() {
 
 	})
 })
+
+func getNumClients() int {
+	numClients := 1
+	if numClientsEnv := os.Getenv("NUM_CLIENTS"); numClientsEnv != "" {
+		parsedNumClients, err := strconv.ParseInt(numClientsEnv, 10, 64)
+		if err == nil && parsedNumClients > 0 {
+			numClients = int(parsedNumClients)
+		}
+	}
+	return numClients
+}
 
 func doRequests(duration time.Duration) {
 	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
