@@ -73,6 +73,7 @@ func doRequests(duration time.Duration) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(resp).NotTo(BeNil())
+		<-time.After(10 * time.Millisecond)
 	}
 	conn.Close()
 }
