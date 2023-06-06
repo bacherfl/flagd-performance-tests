@@ -21,14 +21,14 @@ var _ = Describe("YourGRPCService", func() {
 		client pb.ServiceClient
 	)
 
-	BeforeSuite(func() {
+	BeforeEach(func() {
 		var err error
 		conn, err = grpc.Dial("flagd.flagd-performance-test:80", grpc.WithInsecure())
 		Expect(err).NotTo(HaveOccurred())
 		client = pb.NewServiceClient(conn)
 	})
 
-	AfterSuite(func() {
+	AfterEach(func() {
 		conn.Close()
 	})
 
