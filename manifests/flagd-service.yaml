@@ -20,7 +20,7 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: flagd
+    app: flagd-http
   name: flagd-http
   namespace: flagd-performance-test
 spec:
