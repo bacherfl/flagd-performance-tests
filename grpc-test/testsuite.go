@@ -51,10 +51,21 @@ func getNumClients() int {
 	return numClients
 }
 
+func usePersistentConnection() bool {
+	if os.Getenv("USE_PERSISTENT_CONN") == "false" {
+		return false
+	}
+	return true
+}
+
 func doRequests(duration time.Duration) {
-	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	Expect(err).NotTo(HaveOccurred())
-	client := pb.NewServiceClient(conn)
+	var conn *grpc.ClientConn
+	var grpcClient pb.ServiceClient
+
+	// if we use persistent connections, establish the client connection here and reuse it among the requests
+	if usePersistentConnection() {
+		conn, grpcClient = establishGrpcConnection()
+	}
 
 	end := time.Now().Add(duration)
 
@@ -62,8 +73,12 @@ func doRequests(duration time.Duration) {
 		if time.Now().After(end) {
 			break
 		}
+		// if we don't use persistent connections, reestablish the connection in each request
+		if !usePersistentConnection() {
+			conn, grpcClient = establishGrpcConnection()
+		}
 		randNumber := rand.Intn(5000)
-		resp, err := client.ResolveString(context.Background(), &schemav1.ResolveStringRequest{
+		resp, err := grpcClient.ResolveString(context.Background(), &schemav1.ResolveStringRequest{
 			FlagKey: fmt.Sprintf("color-%d", randNumber),
 			Context: &structpb.Struct{
 				Fields: map[string]*structpb.Value{
@@ -76,6 +91,13 @@ func doRequests(duration time.Duration) {
 		<-time.After(10 * time.Millisecond)
 	}
 	conn.Close()
+}
+
+func establishGrpcConnection() (*grpc.ClientConn, pb.ServiceClient) {
+	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	Expect(err).NotTo(HaveOccurred())
+	client := pb.NewServiceClient(conn)
+	return conn, client
 }
 
 func TestGRPC(t *testing.T) {
