@@ -41,14 +41,21 @@ var _ = Describe("YourGRPCService", func() {
 })
 
 func getNumClients() int {
-	numClients := 1
-	if numClientsEnv := os.Getenv("NUM_CLIENTS"); numClientsEnv != "" {
-		parsedNumClients, err := strconv.ParseInt(numClientsEnv, 10, 64)
-		if err == nil && parsedNumClients > 0 {
-			numClients = int(parsedNumClients)
+	return getEnvVarOrDefault("NUM_CLIENTS", 1)
+}
+
+func getWaitTimeBetweenRequests() int {
+	return getEnvVarOrDefault("WAIT_TIME_BETWEEN_REQUESTS_MS", 10)
+}
+
+func getEnvVarOrDefault(envVar string, defaultValue int) int {
+	if envVarValue := os.Getenv(envVar); envVarValue != "" {
+		parsedEnvVarValue, err := strconv.ParseInt(envVarValue, 10, 64)
+		if err == nil && parsedEnvVarValue > 0 {
+			defaultValue = int(parsedEnvVarValue)
 		}
 	}
-	return numClients
+	return defaultValue
 }
 
 func usePersistentConnection() bool {
@@ -66,6 +73,8 @@ func doRequests(duration time.Duration) {
 	if usePersistentConnection() {
 		conn, grpcClient = establishGrpcConnection()
 	}
+
+	waitTimeBetweenRequests := getWaitTimeBetweenRequests()
 
 	end := time.Now().Add(duration)
 
@@ -88,7 +97,9 @@ func doRequests(duration time.Duration) {
 		})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(resp).NotTo(BeNil())
-		<-time.After(10 * time.Millisecond)
+		if waitTimeBetweenRequests > 0 {
+			<-time.After(time.Duration(waitTimeBetweenRequests) * time.Millisecond)
+		}
 	}
 	conn.Close()
 }
