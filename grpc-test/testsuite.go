@@ -2,16 +2,17 @@ package grpc_test
 
 import (
 	schemav1 "buf.build/gen/go/open-feature/flagd/protocolbuffers/go/schema/v1"
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/imroc/req/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/structpb"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"sync"
@@ -118,8 +119,6 @@ func doRequests(duration time.Duration) {
 }
 
 func doHttpRequests(duration time.Duration) {
-	client := req.C()
-
 	waitTimeBetweenRequests := getWaitTimeBetweenRequests()
 
 	end := time.Now().Add(duration)
@@ -130,21 +129,20 @@ func doHttpRequests(duration time.Duration) {
 		}
 		randNumber := rand.Intn(5000)
 
-		resp, err := client.R().
-			SetBody(map[string]interface{}{
-				"flagKey": fmt.Sprintf("color-%d", randNumber),
-				"context": map[string]interface{}{
-					"version": "1.0.0",
-				},
-			}).
-			Post("http://flagd.flagd-performance-test:80/schema.v1.Service/ResolveString")
-		if err != nil {
-			log.Fatal(err)
+		reqBody := map[string]interface{}{
+			"flagKey": fmt.Sprintf("color-%d", randNumber),
+			"context": map[string]interface{}{
+				"version": "1.0.0",
+			},
 		}
 
+		marshal, _ := json.Marshal(reqBody)
+
+		post, err := http.Post("http://flagd.flagd-performance-test:80/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
+
 		Expect(err).To(Not(HaveOccurred()))
-		Expect(resp).NotTo(BeNil())
-		Expect(resp.IsSuccessState()).To(BeTrue())
+		Expect(post).NotTo(BeNil())
+		Expect(post.StatusCode).To(Equal(http.StatusOK))
 		if waitTimeBetweenRequests > 0 {
 			<-time.After(time.Duration(waitTimeBetweenRequests) * time.Millisecond)
 		}
