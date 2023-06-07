@@ -34,7 +34,7 @@ var _ = Describe("YourGRPCService", func() {
 		for i := 0; i < numClients; i++ {
 			go func() {
 				defer wg.Done()
-				if useHTTP() {
+				if true || useHTTP() {
 					doHttpRequests(15 * time.Minute)
 				} else {
 					doRequests(15 * time.Minute)
@@ -138,15 +138,11 @@ func doHttpRequests(duration time.Duration) {
 
 		marshal, _ := json.Marshal(reqBody)
 
-		_, err := http.Post("http://flagd-http.flagd-performance-test:80/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
+		resp, err := http.Post("http://flagd-http.flagd-performance-test:80/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
 
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-
-		// Expect(err).NotTo(HaveOccurred())
-		// Expect(post).NotTo(BeNil())
-		// Expect(post.StatusCode).To(Equal(http.StatusOK))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(resp).NotTo(BeNil())
+		Expect(resp.StatusCode).To(Equal(http.StatusOK))
 		if waitTimeBetweenRequests > 0 {
 			<-time.After(time.Duration(waitTimeBetweenRequests) * time.Millisecond)
 		}
