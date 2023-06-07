@@ -140,6 +140,10 @@ func doHttpRequests(duration time.Duration) {
 
 		post, err := http.Post("http://flagd.flagd-performance-test:80/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
 
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
 		Expect(err).To(Not(HaveOccurred()))
 		Expect(post).NotTo(BeNil())
 		Expect(post.StatusCode).To(Equal(http.StatusOK))
