@@ -9,8 +9,25 @@ metadata:
 spec:
   type: ClusterIP
   ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  selector:
+    app: flagd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: flagd
+  name: flagd-http
+  namespace: flagd-performance-test
+spec:
+  type: ClusterIP
+  ports:
     - port: 80
       protocol: TCP
-      targetPort: 80
+      targetPort: 8080
   selector:
     app: flagd

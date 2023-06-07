@@ -23,6 +23,12 @@ spec:
             items:
               - key: nginx.conf
                 path: nginx.conf
+        - name: proxy-config-http
+          configMap:
+            name: proxy-config-http
+            items:
+              - key: nginx.conf
+                path: nginx.conf
         - name: kube-api-access-t7vn8
           projected:
             sources:
@@ -42,12 +48,20 @@ spec:
                         fieldPath: metadata.namespace
             defaultMode: 420
       containers:
-        - name: flagd-proxy
+        - name: flagd-proxy-grpc
           image: nginx:stable-alpine
           ports:
             - containerPort: 80
           volumeMounts:
             - name: proxy-config
+              mountPath: /etc/nginx
+              readOnly: true
+        - name: flagd-proxy-http
+          image: nginx:stable-alpine
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: proxy-config-http
               mountPath: /etc/nginx
               readOnly: true
         - name: flagd
@@ -114,7 +128,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: proxy-config
+  name: proxy-config-http
   namespace: flagd-performance-test
 data:
   nginx.conf: |
@@ -123,6 +137,22 @@ data:
       server {
         location / {
           proxy_pass http://127.0.0.1:8013;
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-config
+  namespace: flagd-performance-test
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 80 http2;
+        location /schema.v1.Service {
           grpc_pass grpc://localhost:8013;
         }
       }
