@@ -34,7 +34,7 @@ var _ = Describe("YourGRPCService", func() {
 		for i := 0; i < numClients; i++ {
 			go func() {
 				defer wg.Done()
-				if true || useHTTP() {
+				if useHTTP() {
 					doHttpRequests(15 * time.Minute)
 				} else {
 					doRequests(15 * time.Minute)
