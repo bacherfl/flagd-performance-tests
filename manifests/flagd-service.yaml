@@ -10,7 +10,7 @@ spec:
   type: ClusterIP
   ports:
     - protocol: TCP
-      port: 80
+      port: 8013
       targetPort: 8013
   selector:
     app: flagd
@@ -26,8 +26,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 80
+    - port: 8013
       protocol: TCP
-      targetPort: 80
+      targetPort: 8013
   selector:
     app: flagd-http

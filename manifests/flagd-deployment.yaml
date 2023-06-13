@@ -51,7 +51,7 @@ spec:
               mountPath: /etc/nginx
               readOnly: true
         - name: flagd
-          image: bacherfl/flagd:latest
+          image: bacherfl/flagd:3
           args:
             - start
             - '--uri'
@@ -61,13 +61,16 @@ spec:
             - name: metrics
               containerPort: 8080
               protocol: TCP
+            - name: api
+              containerPort: 8013
+              protocol: TCP
           env:
             - name: FLAGD_METRICS_PORT
               value: '8080'
           resources:
             limits:
               cpu: 500m
-              memory: 64M
+              memory: 128M
             requests:
               cpu: 200m
               memory: 32M
@@ -100,8 +103,10 @@ spec:
           imagePullPolicy: Always
           securityContext:
             capabilities:
-              drop:
-                - all
+              #drop:
+              #  - all
+              add:
+                - SYS_PTRACE
             privileged: false
             runAsUser: 65532
             runAsGroup: 65532
@@ -164,7 +169,7 @@ spec:
               mountPath: /etc/nginx
               readOnly: true
         - name: flagd
-          image: bacherfl/flagd:latest
+          image: bacherfl/flagd:3
           args:
             - start
             - '--uri'
@@ -213,8 +218,10 @@ spec:
           imagePullPolicy: Always
           securityContext:
             capabilities:
-              drop:
-                - all
+              #drop:
+              #  - all
+              add:
+                - SYS_PTRACE
             privileged: false
             runAsUser: 65532
             runAsGroup: 65532
