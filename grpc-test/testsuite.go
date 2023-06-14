@@ -150,7 +150,7 @@ func doHttpRequests(duration time.Duration) {
 }
 
 func establishGrpcConnection() (*grpc.ClientConn, pb.ServiceClient) {
-	conn, err := grpc.Dial("flagd-http.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial("flagd.flagd-performance-test:8013", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	Expect(err).NotTo(HaveOccurred())
 	client := pb.NewServiceClient(conn)
 	return conn, client
