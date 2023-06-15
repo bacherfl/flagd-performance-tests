@@ -138,7 +138,11 @@ func doHttpRequests(duration time.Duration) {
 
 		marshal, _ := json.Marshal(reqBody)
 
-		_, _ = http.Post("http://flagd-http.flagd-performance-test:8013/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
+		_, err := http.Post("http://flagd-http.flagd-performance-test:8013/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
+
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 
 		//Expect(err).NotTo(HaveOccurred())
 		//Expect(resp).NotTo(BeNil())
