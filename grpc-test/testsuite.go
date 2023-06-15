@@ -141,7 +141,7 @@ func doHttpRequests(duration time.Duration) {
 		marshal, _ := json.Marshal(reqBody)
 
 		ctx, cancel := context.WithTimeout(context.TODO(), 200*time.Millisecond)
-		req, _ := http.NewRequestWithContext(ctx, http.MethodPost, "http://flagd-http.flagd-performance-test/schema.v1.Service/ResolveString", bytes.NewReader(marshal))
+		req, _ := http.NewRequestWithContext(ctx, http.MethodPost, "http://flagd-http.flagd-performance-test:80/schema.v1.Service/ResolveString", bytes.NewReader(marshal))
 
 		_, err := client.Do(req)
 
