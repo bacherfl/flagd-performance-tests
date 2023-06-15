@@ -123,6 +123,8 @@ func doHttpRequests(duration time.Duration) {
 
 	end := time.Now().Add(duration)
 
+	client := http.DefaultClient
+
 	for {
 		if time.Now().After(end) {
 			break
@@ -138,11 +140,15 @@ func doHttpRequests(duration time.Duration) {
 
 		marshal, _ := json.Marshal(reqBody)
 
-		_, err := http.Post("http://flagd-http.flagd-performance-test:8013/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
+		ctx, cancel := context.WithTimeout(context.TODO(), 200*time.Millisecond)
+		req, _ := http.NewRequestWithContext(ctx, "http://flagd-http.flagd-performance-test:8013/schema.v1.Service/ResolveString", "application/json", bytes.NewReader(marshal))
+
+		_, err := client.Do(req)
 
 		if err != nil {
 			fmt.Println(err.Error())
 		}
+		cancel()
 
 		//Expect(err).NotTo(HaveOccurred())
 		//Expect(resp).NotTo(BeNil())
